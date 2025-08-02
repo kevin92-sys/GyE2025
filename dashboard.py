@@ -6,13 +6,14 @@ import plotly.express as px
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
 
-# Leer archivo
+archivo_excel = "4-MOVBANCARIOS2025.xlsx"
+
 try:
     df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
 except FileNotFoundError:
     st.error(f"No se encontró el archivo {archivo_excel}. Por favor verificá que esté en el repositorio.")
     st.stop()
-df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
+
 df.columns = df.columns.str.strip().str.upper()
 
 # Renombrar columnas clave
@@ -232,5 +233,6 @@ st.dataframe(df_final[["Fecha", "Rubro", "ACTIVIDAD", "Ingreso ARS", "Egreso ARS
     "Ingreso USD": "USD {:,.2f}",
     "Egreso USD": "USD {:,.2f}"
 }))
+
 
 
