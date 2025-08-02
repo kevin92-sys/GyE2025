@@ -9,7 +9,8 @@ st.set_page_config(page_title="Dashboard Modular", layout="wide")
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
 st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
 
-mapa = crear_mapa_lotes("C:/Users/Kevin/Desktop/G&E SA/QGIS/lotes.geojson")
+mapa = crear_mapa_lotes("lotes.geojson")
+
 
 st_folium(mapa, width=900, height=600)
 
@@ -240,6 +241,7 @@ st.dataframe(df_final[["Fecha", "Rubro", "ACTIVIDAD", "Ingreso ARS", "Egreso ARS
     "Ingreso USD": "USD {:,.2f}",
     "Egreso USD": "USD {:,.2f}"
 }))
+
 
 
 
