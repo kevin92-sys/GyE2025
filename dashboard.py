@@ -7,7 +7,7 @@ st.set_page_config(page_title="Dashboard Modular", layout="wide")
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
 
 # Leer archivo
-archivo_excel = "C:\\Users\\Kevin\\Dropbox\\Administracion\\2025\\FINANZAS 2025\\4-MOVBANCARIOS2025.xlsx"
+archivo_excel = "4-MOVBANCARIOS2025.xlsx"
 df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
 df.columns = df.columns.str.strip().str.upper()
 
@@ -228,3 +228,4 @@ st.dataframe(df_final[["Fecha", "Rubro", "ACTIVIDAD", "Ingreso ARS", "Egreso ARS
     "Ingreso USD": "USD {:,.2f}",
     "Egreso USD": "USD {:,.2f}"
 }))
+
