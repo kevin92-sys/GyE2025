@@ -1,10 +1,17 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from importdash import crear_mapa_lotes
+from streamlit_folium import st_folium
 
 # Configuración general
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
+st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
+
+mapa = crear_mapa_lotes("C:/Users/Kevin/Desktop/G&E SA/QGIS/lotes.geojson")
+
+st_folium(mapa, width=900, height=600)
 
 # Leer archivo
 archivo_excel = "C:\\Users\\Kevin\\Dropbox\\Administracion\\2025\\FINANZAS 2025\\4-MOVBANCARIOS2025.xlsx"
