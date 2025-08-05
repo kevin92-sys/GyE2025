@@ -8,12 +8,11 @@ def crear_mapa_lotes(geojson_path=None):
     if geojson_path is None:
         geojson_path = "https://raw.githubusercontent.com/kevin92-sys/GyE2025/master/datos/Nlotes.geojson"
     gdf = gpd.read_file(geojson_path)
-    return gdf
 
     # Asegurar que 'HAS' sea numérico y sin NaN
     gdf["HAS"] = pd.to_numeric(gdf["HAS"], errors="coerce")
     gdf = gdf.dropna(subset=["HAS"])
-    
+
     if gdf.empty:
         raise ValueError("❌ La capa no tiene valores válidos en la columna 'HAS'.")
 
@@ -74,4 +73,3 @@ def crear_mapa_lotes(geojson_path=None):
     cmap.add_to(m)
 
     return m
-
