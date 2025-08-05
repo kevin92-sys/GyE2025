@@ -42,16 +42,17 @@ with tab1:
 
 
 # ========================== TAB 2 ==========================
-# ========================== TAB 2 ==========================
 with tab2:
     st.header("📈 Dashboard Económico")
 
     try:
-        # Leer Excel directo desde GitHub
         df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
     except Exception as e:
         st.error(f"⚠️ Error al leer el archivo Excel:\n`{e}`")
         st.stop()
+
+    # Ahora sí usá df sin problemas
+    st.dataframe(df)
 
     # Procesamiento de columnas
     df.columns = df.columns.str.strip().str.upper()
@@ -272,6 +273,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
