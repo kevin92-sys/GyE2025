@@ -41,7 +41,6 @@ with tab1:
     st_folium(mapa, width="80%", height=800)
 
 
-# ========================== TAB 2 ==========================
 with tab2:
     st.header("📈 Dashboard Económico")
 
@@ -50,9 +49,6 @@ with tab2:
     except Exception as e:
         st.error(f"⚠️ Error al leer el archivo Excel:\n`{e}`")
         st.stop()
-
-    # Ahora sí usá df sin problemas
-    st.dataframe(df)
 
     # Procesamiento de columnas
     df.columns = df.columns.str.strip().str.upper()
@@ -65,7 +61,6 @@ with tab2:
         "EGRES USD": "Egreso USD"
     })
 
-
     # Validación
     columnas_requeridas = ["Fecha", "Rubro", "Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD", "ACTIVIDAD"]
     if not all(col in df.columns for col in columnas_requeridas):
@@ -75,6 +70,10 @@ with tab2:
     # Formateo general
     df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
     df["Mes"] = df["Fecha"].dt.to_period("M").astype(str)
+
+    # Mostrar el dataframe ya procesado
+    st.dataframe(df)
+
 
 
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
@@ -273,6 +272,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
