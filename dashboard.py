@@ -17,10 +17,19 @@ st.title("📊 Dashboard Modular de Ingresos y Egresos")
 
 # Tabs principales
 tab1, tab2 = st.tabs(["🗺️ Mapa de Lotes", "📈 Dashboard Económico"])
+# URL raw del archivo Excel en GitHub
+archivo_excel = "https://github.com/kevin92-sys/GyE2025/raw/master/4-MOVBANCARIOS2025.xlsx"
 # Ruta base del proyecto
-BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
+#BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
 #geojson_path = BASE_DIR / "datos" / "Nlotes.geojson"
-archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
+#archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
+# Leer el Excel directamente desde GitHub
+
+
+with tab2:
+    st.header("📈 Dashboard Económico")
+    st.dataframe(df)  # Mostrar el dataframe como ejemplo
+
 
 # ========================== TAB 1 ==========================
 with tab1:
@@ -33,17 +42,15 @@ with tab1:
 
 
 # ========================== TAB 2 ==========================
+# ========================== TAB 2 ==========================
 with tab2:
-    st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
+    st.header("📈 Dashboard Económico")
 
-    # Validación y carga de Excel
-    if not archivo_excel.exists():
-        st.error(f"❌ No se encontró el archivo Excel: `{archivo_excel}`.\n\nAsegurate de que esté en la carpeta correcta.")
-        st.stop()
     try:
+        # Leer Excel directo desde GitHub
         df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
     except Exception as e:
-        st.error(f"⚠️ Ocurrió un error al leer el archivo Excel:\n\n`{e}`")
+        st.error(f"⚠️ Error al leer el archivo Excel:\n`{e}`")
         st.stop()
 
     # Procesamiento de columnas
@@ -265,5 +272,6 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
