@@ -6,10 +6,9 @@ import pandas as pd
 
 def crear_mapa_lotes(geojson_path=None):
     if geojson_path is None:
-        base_dir = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025") / "datos"
-        geojson_path = base_dir / "Nlotes.geojson"
-
-    gdf = gpd.read_file(str(geojson_path))
+        geojson_path = "https://raw.githubusercontent.com/kevin92-sys/GyE2025/master/datos/Nlotes.geojson"
+    gdf = gpd.read_file(geojson_path)
+    return gdf
 
     # Asegurar que 'HAS' sea numérico y sin NaN
     gdf["HAS"] = pd.to_numeric(gdf["HAS"], errors="coerce")
@@ -75,3 +74,4 @@ def crear_mapa_lotes(geojson_path=None):
     cmap.add_to(m)
 
     return m
+
