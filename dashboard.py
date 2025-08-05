@@ -26,11 +26,6 @@ archivo_excel = "https://github.com/kevin92-sys/GyE2025/raw/master/4-MOVBANCARIO
 # Leer el Excel directamente desde GitHub
 
 
-with tab2:
-    st.header("📈 Dashboard Económico")
-    st.dataframe(df)  # Mostrar el dataframe como ejemplo
-
-
 # ========================== TAB 1 ==========================
 with tab1:
     st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
@@ -272,6 +267,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
