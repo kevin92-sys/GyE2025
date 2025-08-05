@@ -66,10 +66,6 @@ with tab2:
     df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
     df["Mes"] = df["Fecha"].dt.to_period("M").astype(str)
 
-    # Mostrar el dataframe ya procesado
-    st.dataframe(df)
-
-
 
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
@@ -267,6 +263,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
