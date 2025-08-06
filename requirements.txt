@@ -1,4 +1,5 @@
 streamlit
+streamlit-folium
 pandas
 plotly
 openpyxl
@@ -8,4 +9,5 @@ geopandas
 pyogrio
 fiona
 shapely
+
 
