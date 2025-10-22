@@ -3,29 +3,26 @@ import pandas as pd
 import plotly.express as px
 from streamlit_folium import st_folium
 from pathlib import Path
-import os
-import time
 import folium
-import shutil
 from importdash import crear_mapa_lotes
-import geopandas as gpd
 from gantt_lotes import mostrar_gantt
-from pathlib import Path
 
 # Configuración general
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
 
-
 # Tabs principales
 tab1, tab2 = st.tabs(["🗺️ Mapa de Lotes", "📈 Dashboard Económico"])
-# Ruta base del proyecto
-# ------------------ RUTAS ------------------
-# Archivo Excel en la misma carpeta que dashboard.py
-archivo_excel = Path("4-MOVBANCARIOS2025.xlsx")
 
-# Carpeta de GeoJSON relativa al repo
-geojson_dir = Path("datos")
+# ------------------ RUTAS ------------------
+# Carpeta base del proyecto (donde está dashboard.py)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Archivo Excel en la misma carpeta que dashboard.py
+archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
+
+# Carpeta de GeoJSON
+geojson_dir = BASE_DIR / "datos"
 
 # ========================== TAB 1 ==========================
 with tab1:
@@ -34,16 +31,20 @@ with tab1:
     # Selector de campaña
     campaña = st.selectbox("Seleccionar campaña", ["2024-2025", "2025-2026"])
 
-    # Asignar archivo según campaña (ajustado a tus nombres reales)
+    # Detectar archivo GeoJSON según campaña
     if campaña == "2024-2025":
         geojson_path = geojson_dir / "campaña2024-2025.geojson"
     else:
         geojson_path = geojson_dir / "campaña2026.geojson"
 
+    # Debug: mostrar rutas
+    st.write("Ruta completa del archivo GeoJSON:", geojson_path)
+    st.write("¿Existe el archivo?", geojson_path.exists())
+
     # Validar existencia
     if not geojson_path.exists():
         st.error(f"❌ No se encontró el archivo GeoJSON: `{geojson_path}`")
-        st.info("Verificá que esté dentro de la carpeta `/datos` del repositorio.")
+        st.info("Subí la carpeta `datos/` con los archivos GeoJSON al repo de GitHub.")
         st.stop()
 
     # Crear y mostrar el mapa
@@ -288,6 +289,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
