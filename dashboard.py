@@ -37,10 +37,6 @@ with tab1:
     else:
         geojson_path = geojson_dir / "campaña2026.geojson"
 
-    # Debug: mostrar rutas
-    st.write("Ruta completa del archivo GeoJSON:", geojson_path)
-    st.write("¿Existe el archivo?", geojson_path.exists())
-
     # Validar existencia
     if not geojson_path.exists():
         st.error(f"❌ No se encontró el archivo GeoJSON: `{geojson_path}`")
@@ -54,8 +50,6 @@ with tab1:
     st.markdown("---")
     st.markdown("## 📅 Plan de Siembra por Lote")
     mostrar_gantt()
-
-
 
 
 # ========================== TAB 2 ==========================
@@ -289,6 +283,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
