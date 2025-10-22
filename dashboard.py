@@ -10,6 +10,7 @@ import shutil
 from importdash import crear_mapa_lotes
 import geopandas as gpd
 from gantt_lotes import mostrar_gantt
+from pathlib import Path
 
 # Configuración general
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
@@ -287,6 +288,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
