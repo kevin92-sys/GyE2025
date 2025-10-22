@@ -9,6 +9,7 @@ import folium
 import shutil
 from importdash import crear_mapa_lotes
 import geopandas as gpd
+from gantt_lotes import mostrar_gantt
 
 # Configuración general
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
@@ -23,13 +24,31 @@ BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
 archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
 
 # ========================== TAB 1 ==========================
+# Carpeta donde están los GeoJSON
+base_dir = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025/datos")
+
 with tab1:
     st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
-    # Cargar mapa
-    ## No paso la ruta. La otra opcion menos restrictiva seria quitar los comentarios
-    mapa = crear_mapa_lotes()
-    #mapa = crear_mapa_lotes(str(geojson_path))
-    st_folium(mapa, width="80%", height=800)
+    
+    # Selector de campaña
+    campaña = st.selectbox(
+        "Seleccionar campaña",
+        ["2024-2025", "2025-2026"]
+    )
+
+    # Asignar archivo según campaña
+    if campaña == "2024-2025":
+        geojson_path = base_dir / "campaña2024-2025.geojson"
+    else:
+        geojson_path = base_dir / "campaña2026.geojson"
+
+    # Crear y mostrar el mapa (dentro de la pestaña)
+    m = crear_mapa_lotes(geojson_path)
+    st_folium(m, width=900, height=600)
+
+    st.markdown("---")
+    st.markdown("## 📅 Plan de Siembra por Lote")
+    mostrar_gantt()
 
 
 # ========================== TAB 2 ==========================
@@ -265,5 +284,6 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 

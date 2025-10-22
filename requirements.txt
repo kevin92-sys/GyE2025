@@ -1,5 +1,9 @@
+openpyxl
 streamlit
 pandas
 plotly
-openpyxl
+streamlit-folium
+geopandas
+folium
+matplotlib
 

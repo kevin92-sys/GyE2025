@@ -1,40 +1,53 @@
-from pathlib import Path
 import geopandas as gpd
-import folium
-import branca.colormap as cm
 import pandas as pd
+import folium
+from branca import colormap as cm
+from pathlib import Path
 
-def crear_mapa_lotes(geojson_path=None):
-    if geojson_path is None:
-        base_dir = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025") / "datos"
-        geojson_path = base_dir / "Nlotes.geojson"
+def crear_mapa_lotes(geojson_path):
+    """
+    Crear mapa de lotes a partir de un archivo GeoJSON exportado desde QGIS.
+    Muestra todos los productos aplicados, ignorando valores NaN, 'nan', vacíos, 0, NULL, etc.
+    """
+
+    geojson_path = Path(geojson_path)
+    if not geojson_path.exists():
+        raise FileNotFoundError(f"No se encontró el archivo GeoJSON: {geojson_path}")
 
     gdf = gpd.read_file(str(geojson_path))
 
     # Asegurar que 'HAS' sea numérico y sin NaN
     gdf["HAS"] = pd.to_numeric(gdf["HAS"], errors="coerce")
     gdf = gdf.dropna(subset=["HAS"])
-    
     if gdf.empty:
         raise ValueError("❌ La capa no tiene valores válidos en la columna 'HAS'.")
 
-    # Convertir a CRS proyectado para calcular centro del mapa
+    # 🔹 Limpieza más eficiente: convertir todo a string y reemplazar valores vacíos,
+    # excepto 'HAS' que debe seguir numérico
+    vacios = ["nan", "none", "null", "", "-", "--", "sin dato", "no aplica"]
+    for col in gdf.columns:
+        if col not in ["geometry", "HAS"]:
+            gdf[col] = gdf[col].astype(str).str.strip().str.lower().replace(vacios, pd.NA)  
+
+    # Calcular centro del mapa
     gdf_proj = gdf.to_crs(epsg=3857)
     centroids = gdf_proj.geometry.centroid
-    mean_x = centroids.x.mean()
-    mean_y = centroids.y.mean()
+    mean_x, mean_y = centroids.x.mean(), centroids.y.mean()
+    centroids_geo = gpd.GeoSeries(
+        gpd.points_from_xy([mean_x], [mean_y]), crs=3857
+    ).to_crs(epsg=4326)
+    center_lat, center_lon = centroids_geo.y.iloc[0], centroids_geo.x.iloc[0]
 
-    # Volver a EPSG:4326 para usar en folium
-    centroids_geo = gpd.GeoSeries(gpd.points_from_xy([mean_x], [mean_y]), crs=3857).to_crs(epsg=4326)
-    center_lat = centroids_geo.y.iloc[0]
-    center_lon = centroids_geo.x.iloc[0]
-
+    # Crear mapa base
     m = folium.Map(location=[center_lat, center_lon], zoom_start=15, control_scale=True)
 
-    min_val = gdf["HAS"].min()
-    max_val = gdf["HAS"].max()
+    # Escala de color por hectáreas
+    min_val, max_val = gdf["HAS"].min(), gdf["HAS"].max()
     cmap = cm.LinearColormap(['#ffffcc', '#006837'], vmin=min_val, vmax=max_val)
 
+    columnas_basicas = {"geometry", "Lotes", "HAS", "CULTIVO"}
+
+    # Crear polígonos y popups
     for _, row in gdf.iterrows():
         color = cmap(row["HAS"])
 
@@ -45,19 +58,22 @@ def crear_mapa_lotes(geojson_path=None):
             sticky=True
         )
 
-        popup_html = f"""
-        <b>Lote:</b> {row.get('Lotes', 'N/A')}<br>
-        <b>Has:</b> {row.get('HAS', 'N/A')}<br>
-        <b>Cultivo:</b> {row.get('CULTIVO', 'N/A')}<br>
-        <b>ROUND:</b> {row.get('ROUND', 'N/A')}<br>
-        <b>FULLTEC:</b> {row.get('FULLTEC', 'N/A')}<br>
-        <b>2,4D ADVA:</b> {row.get('2,4D ADVA', 'N/A')}<br>
-        <b>A35T GOLD:</b> {row.get('A35T GOLD', 'N/A')}<br>
-        <b>ACEITE ROC:</b> {row.get('ACEITE ROC', 'N/A')}<br>
-        <b>ACURON:</b> {row.get('ACURON', 'N/A')}<br>
-        <b>ADENGO:</b> {row.get('ADENGO', 'N/A')}<br>
-        <b>BIFENTRIN:</b> {row.get('BIFENTRIN', 'N/A')}<br>
-        """
+        popup_html = f"<b>Lote:</b> {row.get('Lotes', 'N/A')}<br>"
+        popup_html += f"<b>Has:</b> {row.get('HAS', 'N/A')}<br>"
+        popup_html += f"<b>Cultivo:</b> {row.get('CULTIVO', 'N/A')}<br><hr>"
+        popup_html += "<b>🧪 Productos aplicados:</b><br>"
+
+        productos_html = ""
+        for col in gdf.columns:
+            if col not in columnas_basicas:
+                valor = row.get(col)
+                if pd.notna(valor):
+                    productos_html += f"{col}: {valor}<br>"
+
+        if productos_html == "":
+            productos_html = "<i>Sin productos registrados</i>"
+
+        popup_html += productos_html
 
         folium.GeoJson(
             row.geometry,
