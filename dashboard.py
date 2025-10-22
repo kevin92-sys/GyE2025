@@ -33,14 +33,16 @@ with tab1:
     # Selector de campaña
     campaña = st.selectbox("Seleccionar campaña", ["2024-2025", "2025-2026"])
 
-    # Archivo según campaña
-    nombre_geojson = f"campaña{campaña}.geojson"
-    geojson_path = geojson_dir / nombre_geojson
+    # Asignar archivo según campaña (ajustado a tus nombres reales)
+    if campaña == "2024-2025":
+        geojson_path = geojson_dir / "campaña2024-2025.geojson"
+    else:
+        geojson_path = geojson_dir / "campaña2026.geojson"
 
-    # Validación robusta
+    # Validar existencia
     if not geojson_path.exists():
         st.error(f"❌ No se encontró el archivo GeoJSON: `{geojson_path}`")
-        st.info("Verificá que el archivo esté dentro de la carpeta `/datos` del repositorio GitHub.")
+        st.info("Verificá que esté dentro de la carpeta `/datos` del repositorio.")
         st.stop()
 
     # Crear y mostrar el mapa
@@ -50,6 +52,7 @@ with tab1:
     st.markdown("---")
     st.markdown("## 📅 Plan de Siembra por Lote")
     mostrar_gantt()
+
 
 
 
@@ -284,6 +287,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
