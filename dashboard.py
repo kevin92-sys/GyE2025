@@ -19,14 +19,14 @@ st.title("📊 Dashboard Modular de Ingresos y Egresos")
 # Tabs principales
 tab1, tab2 = st.tabs(["🗺️ Mapa de Lotes", "📈 Dashboard Económico"])
 # Ruta base del proyecto
-BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
-#geojson_path = BASE_DIR / "datos" / "Nlotes.geojson"
-archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
+# ------------------ RUTAS ------------------
+# Archivo Excel en la misma carpeta que dashboard.py
+archivo_excel = Path("4-MOVBANCARIOS2025.xlsx")
+
+# Carpeta de GeoJSON relativa al repo
+geojson_dir = Path("datos")
 
 # ========================== TAB 1 ==========================
-# Carpeta donde están los GeoJSON
-base_dir = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025/datos")
-
 with tab1:
     st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
     
@@ -38,11 +38,16 @@ with tab1:
 
     # Asignar archivo según campaña
     if campaña == "2024-2025":
-        geojson_path = base_dir / "campaña2024-2025.geojson"
+        geojson_path = geojson_dir / "campaña2024-2025.geojson"
     else:
-        geojson_path = base_dir / "campaña2026.geojson"
+        geojson_path = geojson_dir / "campaña2025-2026.geojson"
 
-    # Crear y mostrar el mapa (dentro de la pestaña)
+    # Validar existencia
+    if not geojson_path.exists():
+        st.error(f"❌ No se encontró el archivo GeoJSON: `{geojson_path}`")
+        st.stop()
+
+    # Crear y mostrar el mapa
     m = crear_mapa_lotes(geojson_path)
     st_folium(m, width=900, height=600)
 
@@ -53,11 +58,11 @@ with tab1:
 
 # ========================== TAB 2 ==========================
 with tab2:
-    st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
+    st.markdown("## 📊 Dashboard Económico")
 
     # Validación y carga de Excel
     if not archivo_excel.exists():
-        st.error(f"❌ No se encontró el archivo Excel: `{archivo_excel}`.\n\nAsegurate de que esté en la carpeta correcta.")
+        st.error(f"❌ No se encontró el archivo Excel: `{archivo_excel}`")
         st.stop()
     try:
         df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
@@ -76,8 +81,7 @@ with tab2:
         "EGRES USD": "Egreso USD"
     })
 
-
-    # Validación
+    # Validación de columnas
     columnas_requeridas = ["Fecha", "Rubro", "Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD", "ACTIVIDAD"]
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas necesarias: " + ", ".join(columnas_requeridas))
@@ -86,7 +90,6 @@ with tab2:
     # Formateo general
     df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
     df["Mes"] = df["Fecha"].dt.to_period("M").astype(str)
-
 
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
@@ -284,6 +287,7 @@ with tab2:
         "Ingreso USD": "USD {:,.2f}",
         "Egreso USD": "USD {:,.2f}"
     }))
+
 
 
 
