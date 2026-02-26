@@ -13,7 +13,6 @@ from gantt_lotes import mostrar_gantt
 from render_tab2 import render_dashboard_interanual
 from render_tab4 import hacienda
 import locale
-locale.setlocale(locale.LC_TIME, "Spanish_Argentina")
 
 ##run cmd C:\Users\Kevin\Dropbox\Administracion\2025\FINANZAS 2025>
 
@@ -69,10 +68,6 @@ with tab1:
         key="campaña_tab1"
     )
 
-
-
-    # Selector de campaña
-    campaña = st.selectbox("Seleccionar campaña", ["2024-2025", "2025-2026"])
 
     # Detectar archivo GeoJSON según campaña
 
@@ -154,69 +149,62 @@ def cargar_excel(path, anio):
         st.stop()
 
 # ========================== TAB 2 ==========================
+# ========================== TAB 2 ==========================
 with tab2:
+    st.markdown("## 📊 Dashboard Económico")
 
-
+    # Cargar datos interanuales
     df_final = render_dashboard_interanual(
         archivo_2025,
         archivo_2026,
         cargar_excel
     )
+
+    # Convertir columnas numéricas
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
         df_final[col] = pd.to_numeric(df_final[col], errors="coerce").fillna(0)
 
     # ========= MÓDULO 1: Filtro por Actividad =========
     st.sidebar.header("🔍 Filtro de Actividades")
     actividades_unicas = sorted(df_final["ACTIVIDAD"].dropna().unique())
-    actividad_sel = st.sidebar.multiselect("Seleccioná una o más actividades", actividades_unicas, default=actividades_unicas)
-
+    actividad_sel = st.sidebar.multiselect(
+        "Seleccioná una o más actividades",
+        actividades_unicas,
+        default=actividades_unicas,
+        key="filtro_actividad"  # <- clave única
+    )
     df_filtrado_1 = df_final[df_final["ACTIVIDAD"].isin(actividad_sel)]
 
-    # ========= MÓDULO 2: Filtro por Rubro (según actividad) =========
+    # ========= MÓDULO 2: Filtro por Rubro =========
     st.sidebar.header("📂 Filtro de Rubros")
     rubros_validos = sorted(df_filtrado_1["Rubro"].dropna().unique())
-    rubro_sel = st.sidebar.multiselect("Seleccioná uno o más rubros", rubros_validos, default=rubros_validos)
-
+    rubro_sel = st.sidebar.multiselect(
+        "Seleccioná uno o más rubros",
+        rubros_validos,
+        default=rubros_validos,
+        key="filtro_rubro"      # <- clave única
+    )
     df_filtrado_2 = df_filtrado_1[df_filtrado_1["Rubro"].isin(rubro_sel)]
 
     # ========= MÓDULO 3: Filtro por Mes =========
     st.sidebar.header("🗓️ Filtro de Meses")
+    # Asegurarse de que la columna 'Mes' sea datetime o string con formato correcto
+    if not pd.api.types.is_datetime64_any_dtype(df_filtrado_2['Fecha']):
+        df_filtrado_2['Fecha'] = pd.to_datetime(df_filtrado_2['Fecha'], errors='coerce', dayfirst=True)
+    df_filtrado_2['Mes'] = df_filtrado_2['Fecha'].dt.to_period('M').dt.to_timestamp()
+    
     meses_validos = sorted(df_filtrado_2["Mes"].dropna().unique())
-    meses_sel = st.sidebar.multiselect("Seleccioná uno o más meses", meses_validos, default=meses_validos)
-
+    meses_sel = st.sidebar.multiselect(
+        "Seleccioná uno o más meses",
+        meses_validos,
+        default=meses_validos,
+        key="filtro_mes"        # <- clave única
+    )
     df_final = df_filtrado_2[df_filtrado_2["Mes"].isin(meses_sel)]
 
-    # ========= MÓDULO 4: Métricas =========
-    st.markdown("## 📌 Métricas Generales")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("💸 Egresos (ARS)", f"${df_final['Egreso ARS'].sum():,.0f}")
-    col2.metric("🟢 Ingresos (ARS)", f"${df_final['Ingreso ARS'].sum():,.0f}")
-    col3.metric("💸 Egresos (USD)", f"USD {df_final['Egreso USD'].sum():,.2f}")
-    col4.metric("🟢 Ingresos (USD)", f"USD {df_final['Ingreso USD'].sum():,.2f}")
-
-    # ========= MÓDULO 5: Gráficos =========
-    st.markdown("## 📈 Gráficos")
-
-    # Evolución mensual
-    st.subheader("📊 Evolución Mensual de Ingresos y Egresos (ARS)")
-    df_mensual = df_final.groupby("Mes").sum(numeric_only=True).reset_index()
-    fig_line = px.line(
-        df_mensual,
-        x="Mes",
-        y=["Ingreso ARS", "Egreso ARS"],
-        markers=True,
-        color_discrete_map={"Ingreso ARS": "green", "Egreso ARS": "red"}
-
-    )
-
-    df_agricultura = df_final[
-        df_final["ACTIVIDAD"].str.upper() == "AGRICULTURA"
-    ].copy()
+    
 
 
-# ========================== TAB 3 ==========================
-with tab3:
-    st.subheader("🌾 Margen Bruto Agricultura 2025")
 
 # ========================== TAB 3 ==========================
 with tab3:
@@ -314,139 +302,16 @@ with tab3:
             title="🌱 Margen Bruto Agricultura",
             text_auto=True
         )
-        st.plotly_chart(fig_detalles, use_container_width=True)
-
+        st.plotly_chart(fig_detalles, use_container_width=True, key="tab3_fig_detalles")
 
 
 
 # ========================== TAB 4 ==========================
+
+    
 with tab4:
-    st.subheader("🐄 Ventas de Hacienda 2025")
-
-    archivo_hacienda = BASE_DIR / "HACIENDA 2025.xlsx"
-
-    # ================= Tabla 1: resumen por flete =================
-    try:
-        df_hacienda = pd.read_excel(archivo_hacienda, header=2, usecols="A:I", nrows=6)
-    except Exception as e:
-        st.error(f"⚠️ Error al leer Excel de Hacienda:\n{e}")
-        st.stop()
-
-    df_hacienda.columns = df_hacienda.columns.str.strip().str.upper()
-
-    # Convertir columnas numéricas
-    columnas_numericas = ["CANTIDAD", "KG VIVOS", "PROM ANIMAL", "KG FRIG", "PROM FRIG", "RINDE", "MONTO VTA EST", "LIQUIDACION"]
-    for col in columnas_numericas:
-        if col in df_hacienda.columns:
-            df_hacienda[col] = pd.to_numeric(
-                df_hacienda[col].astype(str)
-                              .str.replace("[^0-9.,-]", "", regex=True)
-                              .str.replace(",", "."), 
-                errors="coerce"
-            )
-
-    # ================= Métricas =================
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("🐄 Cantidad Total", f"{df_hacienda['CANTIDAD'].sum():,.0f} cabezas")
-    col2.metric("💰 Total Recaudado", f"${df_hacienda['MONTO VTA EST'].sum():,.0f}")
-    col3.metric("📦 Kg Vivos Totales", f"{df_hacienda['KG VIVOS'].sum():,.0f} kg")
-    col4.metric("📦 Kg Frigoríficos Totales", f"{df_hacienda['KG FRIG'].sum():,.0f} kg")
-
-    # ================= Tabla =================
-    st.markdown("### 📋 Detalle de Ventas por Flete")
-    st.dataframe(df_hacienda.style.format({
-        "CANTIDAD": "{:,.0f}",
-        "KG VIVOS": "{:,.0f}",
-        "PROM ANIMAL": "{:,.2f}",
-        "KG FRIG": "{:,.0f}",
-        "PROM FRIG": "{:,.2f}",
-        "RINDE": "{:.2f}%",
-        "MONTO VTA EST": "${:,.0f}",
-        "LIQUIDACION": "{:,.0f}"  # entero
-    }))
-
-
-    # ================= Gráfico combinado: Monto vs Rinde =================
-    import plotly.graph_objects as go
-
-    fig_combined = go.Figure()
-
-    # Monto Vta Est como línea
-    fig_combined.add_trace(go.Scatter(
-        x=df_hacienda.index,
-        y=df_hacienda["MONTO VTA EST"],
-        mode="lines+markers",
-        name="Monto Vta Est ($)",
-        line=dict(color="cyan"),
-        yaxis="y1"
-    ))
-
-    # Rinde como barras
-    fig_combined.add_trace(go.Bar(
-        x=df_hacienda.index,
-        y=df_hacienda["RINDE"],
-        name="Rinde (%)",
-        marker_color="lime",
-        yaxis="y2",
-        opacity=0.2
-    ))
-
-    fig_combined.update_layout(
-        title="💰 Monto vendido y Rinde por Flete",
-        xaxis_title="Flete",
-        yaxis=dict(
-            title="Monto Vta Est ($)",
-            side="left",
-            showgrid=False,
-            tickformat="$,"
-        ),
-        yaxis2=dict(
-            title="Rinde (%)",
-            overlaying="y",
-            side="right",
-            showgrid=False,
-            tickformat=".2f"
-        ),
-        legend=dict(x=0.01, y=0.99)
-    )
-
-    st.plotly_chart(fig_combined, use_container_width=True)
-
-    # ================= Tabla 2: detalle por animal =================
-    try:
-        df_animales = pd.read_excel(archivo_hacienda, header=12, usecols="A:I", nrows=490)  # fila 13 a 502
-    except Exception as e:
-        st.error(f"⚠️ Error al leer tabla de animales:\n{e}")
-        st.stop()
-
-    df_animales.columns = df_animales.columns.str.strip().str.upper()
-
-    # Convertir KG MEDIA RES a numérico
-    df_animales["KG MEDIA RES"] = pd.to_numeric(
-        df_animales["KG MEDIA RES"].astype(str)
-                        .str.replace("[^0-9.,-]", "", regex=True)
-                        .str.replace(",", "."), 
-        errors="coerce"
-    )
-
-    # Asignar número de animal
-    df_animales = df_animales.reset_index(drop=True)
-    df_animales["ANIMAL_ID"] = df_animales.index + 1
-
-    # ================= Scatter plot =================
-    fig_scatter = px.scatter(
-        df_animales,
-        x="ANIMAL_ID",
-        y="KG MEDIA RES",
-        hover_data=["N° FLETE", "FECHA", "CANTIDAD", "TIPIFICACION", "PRECIO", "MONTO VENTA", "DESTINO", "EXPORTACION"],
-        title="🐂 Peso de Media Res por Animal",
-        labels={"KG MEDIA RES": "Peso (kg)", "ANIMAL_ID": "Animal"}
-    )
-    st.plotly_chart(fig_scatter, use_container_width=True)
-
-
-
-
+    hacienda(BASE_DIR)
+    
 
 
 # ========================== TAB 5 ==========================
@@ -527,7 +392,7 @@ with tab5:
                 yshift=10
             )
 
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, use_container_width=True, key= "tab5_fig_creditos")
 
         # ================= Tabla =================
         st.markdown("### 📋 Detalle de Créditos")
@@ -546,102 +411,3 @@ with tab5:
 
 
 
-
-
-
-# ========================== TAB 4 ==========================
-
-with tab4:
-    hacienda(BASE_DIR)
-
-
-
-# ========================== TAB 5 ==========================
-with tab5:
-    st.subheader("💰 Créditos")
-
-    # Archivo de Excel
-    archivo_compromisos = BASE_DIR / "5-COMPROMISOS 2025.xlsx"
-
-    # Leer Excel, títulos en fila 11 (index=10), solo columnas A-N
-    try:
-        df_creditos = pd.read_excel(archivo_compromisos, header=10, usecols="A:N")
-    except Exception as e:
-        st.error(f"⚠️ Error al leer Excel de compromisos:\n{e}")
-        st.stop()
-
-    # Limpiar columnas
-    df_creditos.columns = df_creditos.columns.str.strip().str.upper()
-
-    # Convertir montos a numéricos
-    for col in ["MONTO INICIAL", "A DEVOLVER", "MONTO INICIAL EN USD", "MONTO A DEVOLVER EN USD",
-                "TASA INTERES", "COMISION"]:
-        if col in df_creditos.columns:
-            df_creditos[col] = pd.to_numeric(
-                df_creditos[col].astype(str)
-                            .str.replace("[^0-9.,-]", "", regex=True)
-                            .str.replace(",", "."), 
-                errors="coerce"
-            )
-
-    # Convertir fechas
-    for col in ["FECHA INICIAL", "FECHA FINAL"]:
-        if col in df_creditos.columns:
-            df_creditos[col] = pd.to_datetime(df_creditos[col], errors="coerce", dayfirst=True)
-
-    # Filtrar solo créditos válidos (descartar subtotales y filas vacías)
-    df_creditos = df_creditos[
-        df_creditos["MONTO INICIAL"].notna() & 
-        (df_creditos["MONTO INICIAL"] > 0) & 
-        df_creditos["ESTADO"].notna() &
-        df_creditos["DESCRIPCIÓN DEL HITO"].str.upper().str.contains("CREDITO")
-    ]
-
-    if df_creditos.empty:
-        st.info("ℹ️ No hay créditos válidos para mostrar.")
-    else:
-        # ================= Métricas =================
-        st.markdown("### 📌 Resumen de Créditos")
-        total_inicial = df_creditos["MONTO INICIAL"].sum()
-        total_a_devolver = df_creditos["A DEVOLVER"].sum()
-        pendientes = df_creditos[df_creditos["ESTADO"].str.upper() == "PENDIENTE"].shape[0]
-
-        col1, col2, col3 = st.columns(3)
-        col1.metric("💵 Total Capital Inicial (ARS)", f"${total_inicial:,.0f}")
-        col2.metric("💵 Total a Devolver (ARS)", f"${total_a_devolver:,.0f}")
-        col3.metric("⏳ Créditos Pendientes", f"{pendientes}")
-
-        # ================= Gráfico: Capital Inicial vs A Devolver =================
-        import plotly.express as px
-
-        fig_bar = px.bar(
-            df_creditos,
-            x="DESCRIPCIÓN DEL HITO",
-            y=["MONTO INICIAL", "A DEVOLVER"],
-            barmode="group",
-            text_auto=True,
-            title="Capital Inicial vs A Devolver por Crédito (ARS)"
-        )
-
-        # Agregar Tasa de Interés como anotación encima de cada barra A Devolver
-        for i, row in df_creditos.iterrows():
-            fig_bar.add_annotation(
-                x=row["DESCRIPCIÓN DEL HITO"],
-                y=row["A DEVOLVER"],
-                text=f"{row['TASA INTERES']:.2f}%",
-                showarrow=True,
-                arrowhead=1,
-                yshift=10
-            )
-
-        st.plotly_chart(fig_bar, use_container_width=True)
-
-        # ================= Tabla =================
-        st.markdown("### 📋 Detalle de Créditos")
-        st.dataframe(df_creditos[[
-            "DESCRIPCIÓN DEL HITO", "MONTO INICIAL", "A DEVOLVER", "TASA INTERES", "FECHA INICIAL", "FECHA FINAL", "ESTADO"
-        ]].style.format({
-            "MONTO INICIAL": "${:,.0f}",
-            "A DEVOLVER": "${:,.0f}",
-            "TASA INTERES": "{:.2f}%"
-        }))
