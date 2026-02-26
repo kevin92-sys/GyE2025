@@ -36,7 +36,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 
 
 # Ruta base del proyecto
-BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
+BASE_DIR = Path(__file__).parent / "datos"
 
 archivo_2025 = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
 archivo_2026 = BASE_DIR / "4-MOVBANCARIOS2026.xlsx"
@@ -404,6 +404,7 @@ with tab5:
             "A DEVOLVER": "${:,.0f}",
             "TASA INTERES": "{:.2f}%"
         }))
+
 
 
 
