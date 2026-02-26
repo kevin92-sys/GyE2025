@@ -19,11 +19,11 @@ locale.setlocale(locale.LC_TIME, "Spanish_Argentina")
 
 # Configuración general
 st.set_page_config(page_title="Dashboard Modular", layout="wide")
-<<<<<<< HEAD
+
 st.title("📊 Est. Don Pedro")
-=======
+
 st.title("📊 Dashboard Modular de Ingresos y Egresos")
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
 
 # Tabs principales
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -34,7 +34,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "💰 Finanzas y Créditos"
 ])
 
-<<<<<<< HEAD
+
 # Ruta base del proyecto
 BASE_DIR = Path("C:/Users/Kevin/Dropbox/Administracion/2025/FINANZAS 2025")
 
@@ -44,7 +44,7 @@ archivo_2026 = BASE_DIR / "4-MOVBANCARIOS2026.xlsx"
 
 # ========================== TAB 1 ==========================
 base_dir = BASE_DIR / "datos"
-=======
+
 # ------------------ RUTAS ------------------
 # Carpeta base del proyecto (donde está dashboard.py)
 BASE_DIR = Path(__file__).resolve().parent
@@ -52,7 +52,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # Archivo Excel en la misma carpeta que dashboard.py
 archivo_excel = BASE_DIR / "4-MOVBANCARIOS2025.xlsx"
 
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
 
 
 # Carpeta de GeoJSON
@@ -61,7 +61,7 @@ geojson_dir = BASE_DIR / "datos"
 # ========================== TAB 1 ==========================
 with tab1:
     st.markdown("## 🗺️ Mapa de Lotes con Información Agronómica")
-<<<<<<< HEAD
+
     
     campaña = st.selectbox(
         "Seleccionar campaña",
@@ -69,20 +69,19 @@ with tab1:
         key="campaña_tab1"
     )
 
-=======
+
 
     # Selector de campaña
     campaña = st.selectbox("Seleccionar campaña", ["2024-2025", "2025-2026"])
 
     # Detectar archivo GeoJSON según campaña
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
     if campaña == "2024-2025":
         geojson_path = geojson_dir / "campaña2024-2025.geojson"
     else:
         geojson_path = geojson_dir / "campaña2026.geojson"
 
-<<<<<<< HEAD
-=======
+
     # Validar existencia
     if not geojson_path.exists():
         st.error(f"❌ No se encontró el archivo GeoJSON: `{geojson_path}`")
@@ -90,7 +89,7 @@ with tab1:
         st.stop()
 
     # Crear y mostrar el mapa
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
     m = crear_mapa_lotes(geojson_path)
     st_folium(m, width=900, height=600)
 
@@ -99,43 +98,28 @@ with tab1:
     mostrar_gantt()
 
 
-<<<<<<< HEAD
 # ========================== FUNCIÓN DE CARGA ==========================
 def cargar_excel(path, anio):
+    import pandas as pd
+    import streamlit as st
 
     if not path.exists():
         st.error(f"❌ No se encontró el archivo: {path}")
-=======
-# ========================== TAB 2 ==========================
-with tab2:
-    st.markdown("## 📊 Dashboard Económico")
+        return pd.DataFrame()
 
-    # Validación y carga de Excel
-    if not archivo_excel.exists():
-        st.error(f"❌ No se encontró el archivo Excel: `{archivo_excel}`")
-        st.stop()
-    try:
-        df = pd.read_excel(archivo_excel, sheet_name="MOV", skiprows=2)
-    except Exception as e:
-        st.error(f"⚠️ Ocurrió un error al leer el archivo Excel:\n\n`{e}`")
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
-        st.stop()
-
-    hojas = pd.ExcelFile(path).sheet_names
-
-    if "MOV" not in hojas:
-        st.error(f"⚠️ La hoja 'MOV' no existe. Hojas disponibles: {hojas}")
-        st.stop()
-
-    # 📌 Header según el año
+    # Definir fila de encabezado según año
     if anio == 2025:
-        header_row = 7   # fila 8 en Excel
+        header_row = 7
     elif anio == 2026:
-        header_row = 2   # fila 3 en Excel
+        header_row = 2
     else:
         header_row = 0
 
-    df = pd.read_excel(path, sheet_name="MOV", header=header_row)
+    try:
+        df = pd.read_excel(path, sheet_name="MOV", header=header_row)
+    except Exception as e:
+        st.error(f"⚠️ Ocurrió un error al leer el archivo Excel:\n`{e}`")
+        return pd.DataFrame()
 
     # Normalizar columnas
     df.columns = df.columns.str.strip().str.upper()
@@ -151,36 +135,42 @@ with tab2:
         "ACTIVIDAD": "ACTIVIDAD"
     })
 
-<<<<<<< HEAD
+    # Agregar columna de año
     df["AÑO"] = anio
 
+    # Validación de columnas
+    columnas_requeridas = ["Fecha", "Rubro", "Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD", "ACTIVIDAD"]
+    faltantes = [c for c in columnas_requeridas if c not in df.columns]
+    if faltantes:
+        st.error(f"❌ Faltan columnas necesarias: {faltantes}")
+        return pd.DataFrame()
+
     return df
-=======
+
     # Validación de columnas
     columnas_requeridas = ["Fecha", "Rubro", "Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD", "ACTIVIDAD"]
     if not all(col in df.columns for col in columnas_requeridas):
         st.error("❌ Faltan columnas necesarias: " + ", ".join(columnas_requeridas))
         st.stop()
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
 
 # ========================== TAB 2 ==========================
 with tab2:
 
-<<<<<<< HEAD
+
     df_final = render_dashboard_interanual(
         archivo_2025,
         archivo_2026,
         cargar_excel
-=======
+    )
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+        df_final[col] = pd.to_numeric(df_final[col], errors="coerce").fillna(0)
 
     # ========= MÓDULO 1: Filtro por Actividad =========
     st.sidebar.header("🔍 Filtro de Actividades")
-    actividades_unicas = sorted(df["ACTIVIDAD"].dropna().unique())
+    actividades_unicas = sorted(df_final["ACTIVIDAD"].dropna().unique())
     actividad_sel = st.sidebar.multiselect("Seleccioná una o más actividades", actividades_unicas, default=actividades_unicas)
 
-    df_filtrado_1 = df[df["ACTIVIDAD"].isin(actividad_sel)]
+    df_filtrado_1 = df_final[df_final["ACTIVIDAD"].isin(actividad_sel)]
 
     # ========= MÓDULO 2: Filtro por Rubro (según actividad) =========
     st.sidebar.header("📂 Filtro de Rubros")
@@ -216,7 +206,7 @@ with tab2:
         y=["Ingreso ARS", "Egreso ARS"],
         markers=True,
         color_discrete_map={"Ingreso ARS": "green", "Egreso ARS": "red"}
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
     )
 
     df_agricultura = df_final[
@@ -228,7 +218,6 @@ with tab2:
 with tab3:
     st.subheader("🌾 Margen Bruto Agricultura 2025")
 
-<<<<<<< HEAD
 # ========================== TAB 3 ==========================
 with tab3:
     st.subheader("🌾 Margen Bruto Agricultura 2025")
@@ -244,7 +233,7 @@ with tab3:
         "BPAS"
     ]
 
-=======
+
     # ================= Clasificación =================
     ingresos_detalles = [
         "VENTA",
@@ -256,7 +245,6 @@ with tab3:
         "BPAS"
     ]
 
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
     egresos_detalles = [
         "DESYUYADOR", "APLICACIONES", "SEGUROS", "SIEMBRA", "EXTRACCION",
         "COSECHA", "FLETES", "INSUMOS","INSUMOS 2025", "INSUMOS 2024", "HONORARIOS", "ACARREO",
@@ -327,8 +315,7 @@ with tab3:
             text_auto=True
         )
         st.plotly_chart(fig_detalles, use_container_width=True)
-<<<<<<< HEAD
-=======
+
 
 
 
@@ -377,7 +364,7 @@ with tab4:
         "MONTO VTA EST": "${:,.0f}",
         "LIQUIDACION": "{:,.0f}"  # entero
     }))
->>>>>>> 920e85752ac9c479bbcd0c81cd27c48b29abd486
+
 
     # ================= Gráfico combinado: Monto vs Rinde =================
     import plotly.graph_objects as go
