@@ -13,6 +13,7 @@ from gantt_lotes import mostrar_gantt
 from render_tab2 import render_dashboard_interanual
 from render_tab4 import hacienda
 import locale
+locale.setlocale(locale.LC_ALL, "")  # Usa el locale por defecto del sistema
 
 ##run cmd C:\Users\Kevin\Dropbox\Administracion\2025\FINANZAS 2025>
 
