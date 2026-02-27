@@ -1,9 +1,13 @@
+pandas
+numpy
 openpyxl
 streamlit
-pandas
 plotly
-streamlit-folium
-geopandas
-folium
 matplotlib
+folium
+geopandas
+shapely
+pyproj
+geopy
+streamlit-folium
 
