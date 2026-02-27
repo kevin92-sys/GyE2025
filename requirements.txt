@@ -7,7 +7,6 @@ matplotlib
 folium
 geopandas
 shapely
-pyproj
-geopy
-streamlit-folium
+
+
 
