@@ -1,7 +1,7 @@
+streamlit
 pandas
 numpy
 openpyxl
-streamlit
 plotly
 matplotlib
 folium
@@ -9,5 +9,4 @@ streamlit-folium
 geopandas
 shapely
 pyproj
-altair>=5.0.1
-
+altair
