@@ -93,6 +93,7 @@ def hacienda(BASE_DIR):
                              title="🐂 Peso de Media Res por Animal",
                              labels={"KG MEDIA RES": "Peso (kg)", "ANIMAL_ID": "Animal"})
     st.plotly_chart(fig_scatter, use_container_width=True, key="fig_scatter_animales")
+<<<<<<< HEAD
 
     # ================= MOVIMIENTO HACIENDA 2025 =================
     st.subheader("📊 Movimiento de Hacienda (2024-2026) - Comparativa Compra/Venta")
@@ -168,3 +169,77 @@ def hacienda(BASE_DIR):
 
                     
 
+=======
+
+    # ================= MOVIMIENTO HACIENDA 2025 =================
+    st.subheader("📊 Movimiento de Hacienda (2024-2026) - Comparativa Compra/Venta")
+
+    archivo_movimiento = BASE_DIR / "2.1- MOVIMIENTO HACIENDA 2025.xlsx"
+    hojas = ["2024", "2025", "2026"]
+    dfs_movimiento = {}
+
+    for hoja in hojas:
+        try:
+            df = pd.read_excel(archivo_movimiento, sheet_name=hoja, header=1)
+            df.columns = df.columns.str.strip()
+            dfs_movimiento[hoja] = df
+        except Exception as e:
+            st.error(f"⚠️ Error al leer hoja {hoja}: {e}")
+
+    # Mostrar en pestañas
+    tab1, tab2, tab3 = st.tabs(hojas)
+    for tab, hoja in zip([tab1, tab2, tab3], hojas):
+        with tab:
+            if hoja in dfs_movimiento:
+                df = dfs_movimiento[hoja]
+                st.dataframe(df)
+
+                cols_upper = [c.upper() for c in df.columns]
+
+                if "PRECIO POR KG" in cols_upper and "CONCEPTO" in cols_upper:
+                    precio_col = df.columns[cols_upper.index("PRECIO POR KG")]
+                    concepto_col = df.columns[cols_upper.index("CONCEPTO")]
+
+                    # Convertir PRECIO POR KG a numérico
+                    df[precio_col] = pd.to_numeric(
+                        df[precio_col].astype(str)
+                        .str.replace("[^0-9.,-]", "", regex=True)
+                        .str.replace(",", "."),
+                        errors="coerce"
+                    )
+
+                    # Filtrar filas por concepto
+                    df_venta = df[df[concepto_col].str.upper().str.contains("VENTA")]
+                    df_compra = df[df[concepto_col].str.upper().str.contains("COMPRA")]
+
+                    # Calcular total por concepto (PRECIO POR KG * CANTIDAD si existe)
+                    if "CANTIDAD" in cols_upper:
+                        cant_col = df.columns[cols_upper.index("CANTIDAD")]
+                        df_venta["MONTO_CALC"] = df_venta[precio_col] * pd.to_numeric(df_venta[cant_col], errors="coerce")
+                        df_compra["MONTO_CALC"] = df_compra[precio_col] * pd.to_numeric(df_compra[cant_col], errors="coerce")
+                    else:
+                        df_venta["MONTO_CALC"] = df_venta[precio_col]
+                        df_compra["MONTO_CALC"] = df_compra[precio_col]
+
+                    # Agrupar por concepto y sumar
+                    venta_agrup = df_venta.groupby(concepto_col)["MONTO_CALC"].sum().reset_index()
+                    compra_agrup = df_compra.groupby(concepto_col)["MONTO_CALC"].sum().reset_index()
+
+                    # Unir para comparar lado a lado
+                    df_comparativa = pd.merge(venta_agrup, compra_agrup, on=concepto_col, how="outer", suffixes=("_VENTA", "_COMPRA")).fillna(0)
+
+                    # Gráfico comparativo
+                    fig = px.bar(df_comparativa, x=concepto_col, y=["MONTO_CALC_VENTA", "MONTO_CALC_COMPRA"],
+                                title=f"Comparativa Compra vs Venta {hoja}",
+                                labels={"value": "Importe ($)", "variable": "Tipo"})
+                    st.plotly_chart(fig, use_container_width=True)
+
+                    # Mostrar ratio promedio si hay compra
+                    if not df_compra.empty:
+                        ratio_promedio = df_venta[precio_col].mean() / df_compra[precio_col].mean()
+                        st.metric(f"Ratio Precio Venta/Compra {hoja}", f"{ratio_promedio:.2f}")
+                    else:
+                        st.info("⚠️ No hay datos de compra para calcular ratio")
+                else:
+                    st.info("⚠️ No hay columnas PRECIO POR KG o CONCEPTO en esta hoja")
+>>>>>>> 5324675 (hacienda)
