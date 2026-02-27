@@ -152,9 +152,7 @@ def cargar_excel(path, anio):
 # ========================== TAB 2 ==========================
 # ========================== TAB 2 ==========================
 with tab2:
-    st.markdown("## 📊 Dashboard Económico")
-
-    # Cargar datos interanuales
+        # Cargar datos interanuales
     df_final = render_dashboard_interanual(
         archivo_2025,
         archivo_2026,
@@ -395,6 +393,7 @@ with tab5:
             "A DEVOLVER": "${:,.0f}",
             "TASA INTERES": "{:.2f}%"
         }))
+
 
 
 
