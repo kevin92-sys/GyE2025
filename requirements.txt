@@ -9,4 +9,5 @@ streamlit-folium
 geopandas
 shapely
 pyproj
-altair
+altair>=5.0.1
+
