@@ -4,8 +4,9 @@ openpyxl
 streamlit
 plotly
 matplotlib
-
-
-
-
-
+folium
+streamlit-folium
+geopandas
+shapely
+pyproj
+altair
