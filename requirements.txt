@@ -4,9 +4,8 @@ openpyxl
 streamlit
 plotly
 matplotlib
-folium
-geopandas
-shapely
+
+
 
 
 
