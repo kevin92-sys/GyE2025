@@ -163,44 +163,7 @@ with tab2:
     for col in ["Ingreso ARS", "Egreso ARS", "Ingreso USD", "Egreso USD"]:
         df_final[col] = pd.to_numeric(df_final[col], errors="coerce").fillna(0)
 
-    # ========= MÓDULO 1: Filtro por Actividad =========
-    st.sidebar.header("🔍 Filtro de Actividades")
-    actividades_unicas = sorted(df_final["ACTIVIDAD"].dropna().unique())
-    actividad_sel = st.sidebar.multiselect(
-        "Seleccioná una o más actividades",
-        actividades_unicas,
-        default=actividades_unicas,
-        key="filtro_actividad"  # <- clave única
-    )
-    df_filtrado_1 = df_final[df_final["ACTIVIDAD"].isin(actividad_sel)]
-
-    # ========= MÓDULO 2: Filtro por Rubro =========
-    st.sidebar.header("📂 Filtro de Rubros")
-    rubros_validos = sorted(df_filtrado_1["Rubro"].dropna().unique())
-    rubro_sel = st.sidebar.multiselect(
-        "Seleccioná uno o más rubros",
-        rubros_validos,
-        default=rubros_validos,
-        key="filtro_rubro"      # <- clave única
-    )
-    df_filtrado_2 = df_filtrado_1[df_filtrado_1["Rubro"].isin(rubro_sel)]
-
-    # ========= MÓDULO 3: Filtro por Mes =========
-    st.sidebar.header("🗓️ Filtro de Meses")
-    # Asegurarse de que la columna 'Mes' sea datetime o string con formato correcto
-    if not pd.api.types.is_datetime64_any_dtype(df_filtrado_2['Fecha']):
-        df_filtrado_2['Fecha'] = pd.to_datetime(df_filtrado_2['Fecha'], errors='coerce', dayfirst=True)
-    df_filtrado_2['Mes'] = df_filtrado_2['Fecha'].dt.to_period('M').dt.to_timestamp()
     
-    meses_validos = sorted(df_filtrado_2["Mes"].dropna().unique())
-    meses_sel = st.sidebar.multiselect(
-        "Seleccioná uno o más meses",
-        meses_validos,
-        default=meses_validos,
-        key="filtro_mes"        # <- clave única
-    )
-    df_final = df_filtrado_2[df_filtrado_2["Mes"].isin(meses_sel)]
-
     
 
 
@@ -393,6 +356,7 @@ with tab5:
             "A DEVOLVER": "${:,.0f}",
             "TASA INTERES": "{:.2f}%"
         }))
+
 
 
 
