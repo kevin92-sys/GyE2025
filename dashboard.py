@@ -222,37 +222,22 @@ with tab3:
         "BPAS"
     ]
 
-
-    # ================= Clasificación =================
-    ingresos_detalles = [
-        "VENTA",
-        "COMPENSACIONES",
-        "SUBSIDIOS",
-        "SOJA PRESTADA ANTERIOR",
-        "IVA RG 2300/2007",
-        "ALQUILER",
-        "BPAS"
-    ]
-
     egresos_detalles = [
         "DESYUYADOR", "APLICACIONES", "SEGUROS", "SIEMBRA", "EXTRACCION",
-        "COSECHA", "FLETES", "INSUMOS","INSUMOS 2025", "INSUMOS 2024", "HONORARIOS", "ACARREO",
-        "FLETES FERTILIZANTE", "CONTRATO ALQUILER", "ROLLOS", "ANALISIS SUELO", "PICADO", "SEMILLAS"
+        "COSECHA", "FLETES", "INSUMOS","INSUMOS 2025", "INSUMOS 2024",
+        "HONORARIOS", "ACARREO", "FLETES FERTILIZANTE", "CONTRATO ALQUILER",
+        "ROLLOS", "ANALISIS SUELO", "PICADO", "SEMILLAS"
     ]
 
     # ================= Preparar dataframe =================
     df_agricultura = df_final[df_final["ACTIVIDAD"].str.upper() == "AGRICULTURA"].copy()
     df_agricultura["DETALLES"] = df_agricultura["DETALLES"].astype(str).str.strip().str.upper()
 
-    df_agricultura["Ingreso ARS"] = pd.to_numeric(
-        df_agricultura["Ingreso ARS"].astype(str).str.replace("[^0-9.,-]", "", regex=True)
-            .str.replace(",", "."), errors="coerce"
-    ).fillna(0)
-
-    df_agricultura["Egreso ARS"] = pd.to_numeric(
-        df_agricultura["Egreso ARS"].astype(str).str.replace("[^0-9.,-]", "", regex=True)
-            .str.replace(",", "."), errors="coerce"
-    ).fillna(0)
+    for col in ["Ingreso ARS", "Egreso ARS"]:
+        df_agricultura[col] = pd.to_numeric(
+            df_agricultura[col].astype(str).str.replace("[^0-9.,-]", "", regex=True)
+                .str.replace(",", "."), errors="coerce"
+        ).fillna(0)
 
     # ================= Agrupar por DETALLES =================
     detalles_unicos = df_agricultura["DETALLES"].unique()
@@ -271,7 +256,13 @@ with tab3:
                 "Margen Bruto": ingresos - egresos
             })
 
-    df_resumen_detalles = pd.DataFrame(resumen_detalles).sort_values("Margen Bruto", ascending=False)
+    # ================= Crear DataFrame seguro =================
+    df_resumen_detalles = pd.DataFrame(resumen_detalles)
+
+    if not df_resumen_detalles.empty and "Margen Bruto" in df_resumen_detalles.columns:
+        df_resumen_detalles = df_resumen_detalles.sort_values("Margen Bruto", ascending=False)
+    else:
+        df_resumen_detalles = pd.DataFrame(columns=["DETALLES", "Ingreso ARS", "Egreso ARS", "Margen Bruto"])
 
     # ================= Métricas resumen =================
     if not df_resumen_detalles.empty:
@@ -294,7 +285,7 @@ with tab3:
             "Margen Bruto": "${:,.0f}"
         }))
 
-        # Gráfico de barras
+        # Gráfico de barras seguro
         fig_detalles = px.bar(
             df_resumen_detalles,
             x="DETALLES",
@@ -404,6 +395,7 @@ with tab5:
             "A DEVOLVER": "${:,.0f}",
             "TASA INTERES": "{:.2f}%"
         }))
+
 
 
 
